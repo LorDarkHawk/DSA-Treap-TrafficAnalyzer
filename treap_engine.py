@@ -106,3 +106,41 @@ class TrafficTreap:
             
         if root.timestamp < end_time:
             self._range_query_rec(root.right, start_time, end_time, result)
+    def search(self, timestamp):
+        """Finds a specific traffic event by its exact arrival time in O(log n) time."""
+        return self._search_rec(self.root, timestamp)
+
+    def _search_rec(self, root, timestamp):
+        if not root:
+            return None
+        
+        # If found, return a dictionary of the vehicle's data
+        if root.timestamp == timestamp:
+            return {
+                "timestamp": root.timestamp,
+                "priority": root.priority,
+                "vehicle_id": root.vehicle_id,
+                "data": root.data
+            }
+        elif timestamp < root.timestamp:
+            return self._search_rec(root.left, timestamp)
+        else:
+            return self._search_rec(root.right, timestamp)
+
+    def correct(self, timestamp, new_priority, new_vehicle_id, new_data):
+        """
+        Updates an existing traffic event. 
+        Because changing priority breaks the Max-Heap property, the mathematically 
+        safest O(log n) approach is to delete the old node and insert the corrected one.
+        """
+        existing_record = self.search(timestamp)
+        
+        if existing_record:
+            # Remove the outdated record
+            self.delete(timestamp)
+            # Insert the fresh record with updated data/priority
+            self.insert(timestamp, new_priority, new_vehicle_id, new_data)
+            return True
+        else:
+            print(f"Error: No vehicle found at timestamp {timestamp} to correct.")
+            return False
